@@ -6,6 +6,8 @@ import android.view.MotionEvent
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
@@ -130,18 +132,36 @@ class MainActivity : ComponentActivity() {
                                 Text("yPrecision= $yRaw")
                                 Row {
                                     Spacer(modifier = Modifier.weight(1f))
-                                    Text(modifier = Modifier.onGloballyPositioned { coordinates ->
-                                        // This will be the size of the Column.
-                                        size.value = coordinates.size
-                                        // The position of the Column relative to the application window.
-                                        positionWindow.value = coordinates.positionInWindow()
-                                        // The position of the Column relative to the Compose root.
-                                        positionInRoot.value = coordinates.positionInRoot()
-                                        // These will be the alignment lines provided to the layout (empty here for Column).
-                                        coordinates.providedAlignmentLines
-                                        // This will be a LayoutCoordinates instance corresponding to the parent of Column.
-                                        coordinates.parentLayoutCoordinates
-                                    }, text = "BBQ了", fontSize = 30.sp, color = textColor.value)
+                                    // Create a MutableTransitionState<Boolean> for the AnimatedVisibility.
+                                    val state = remember {
+                                        MutableTransitionState(false).apply {
+                                            // Start the animation immediately.
+                                            targetState = true
+                                        }
+                                    }
+                                    Column {
+                                        AnimatedVisibility(visibleState = state) {
+                                            Text(
+                                                modifier = Modifier.onGloballyPositioned { coordinates ->
+                                                    // This will be the size of the Column.
+                                                    size.value = coordinates.size
+                                                    // The position of the Column relative to the application window.
+                                                    positionWindow.value =
+                                                        coordinates.positionInWindow()
+                                                    // The position of the Column relative to the Compose root.
+                                                    positionInRoot.value =
+                                                        coordinates.positionInRoot()
+                                                    // These will be the alignment lines provided to the layout (empty here for Column).
+                                                    coordinates.providedAlignmentLines
+                                                    // This will be a LayoutCoordinates instance corresponding to the parent of Column.
+                                                    coordinates.parentLayoutCoordinates
+                                                },
+                                                text = "BBQ了",
+                                                fontSize = 30.sp,
+                                                color = textColor.value
+                                            )
+                                        }
+                                    }
                                 }
                                 Button(onClick = { /*TODO*/ }) {
                                     Text(text = "T1")
