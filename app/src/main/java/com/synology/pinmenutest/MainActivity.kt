@@ -89,6 +89,9 @@ class MainActivity : ComponentActivity() {
                                                     textColor.value = Color.White
                                                 }
                                             }
+                                            MotionEvent.ACTION_POINTER_1_UP -> {
+                                                openState.value = false
+                                            }
                                             (MotionEvent.ACTION_MASK and MotionEvent.ACTION_UP) -> {
                                                 if (it.inScopeOf(positionWindow, size)) {
                                                     Toast
