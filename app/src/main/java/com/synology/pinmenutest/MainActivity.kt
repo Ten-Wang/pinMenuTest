@@ -9,6 +9,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -29,6 +30,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.synology.pinmenutest.ui.theme.PinMenuTestTheme
+import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalComposeUiApi::class)
@@ -50,6 +52,7 @@ class MainActivity : ComponentActivity() {
                 val size = remember {
                     mutableStateOf(IntSize.Zero)
                 }
+                var tapTime: Long = 0
 
                 val textColor = remember {
                     mutableStateOf(Color.White)
@@ -75,13 +78,20 @@ class MainActivity : ComponentActivity() {
                                         Log.i("Teng", "it.action:${it.action}")
                                         when (it.action) {
                                             MotionEvent.ACTION_DOWN -> {
-                                                openState.value = true
+                                                tapTime = System.currentTimeMillis()
                                             }
                                             MotionEvent.ACTION_MOVE -> {
                                                 recordX = it.x
                                                 recordY = it.y
                                                 xRaw = it.rawX
                                                 yRaw = it.rawY
+
+                                                if (System.currentTimeMillis() - tapTime > TimeUnit.MILLISECONDS.toMillis(
+                                                        500
+                                                    )
+                                                ) {
+                                                    openState.value = true
+                                                }
 
                                                 if (it.inScopeOf(positionWindow, size)) {
                                                     textColor.value = Color.Red
@@ -90,7 +100,12 @@ class MainActivity : ComponentActivity() {
                                                 }
                                             }
                                             MotionEvent.ACTION_POINTER_1_UP -> {
-                                                openState.value = false
+                                                if (System.currentTimeMillis() - tapTime < TimeUnit.MILLISECONDS.toMillis(
+                                                        500
+                                                    )
+                                                ) {
+                                                    openState.value = true
+                                                }
                                             }
                                             (MotionEvent.ACTION_MASK and MotionEvent.ACTION_UP) -> {
                                                 if (it.inScopeOf(positionWindow, size)) {
@@ -114,7 +129,12 @@ class MainActivity : ComponentActivity() {
                                                         "coordinates.positionInWindow(): $positionWindow, \ncoordinates.positionInRoot(): $positionInRoot \n coordinates.size:$size"
                                                     )
                                                 }
-                                                openState.value = false
+                                                if (System.currentTimeMillis() - tapTime < TimeUnit.MILLISECONDS.toMillis(
+                                                        500
+                                                    )
+                                                ) {
+                                                    openState.value = true
+                                                }
                                             }
                                         }
                                         true
@@ -125,7 +145,7 @@ class MainActivity : ComponentActivity() {
                     }
                     if (openState.value) {
                         Surface(
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier.fillMaxSize().clickable { openState.value = false },
                             color = Color.White.copy(alpha = 0.5f)
                         ) {
                             Column {
